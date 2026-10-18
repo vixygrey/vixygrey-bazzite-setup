@@ -156,11 +156,12 @@ ensure_homebrew() {
 }
 
 install_packages() {
-  command -v flatpak >/dev/null 2>&1 || die 'Flatpak is required to install Kitty.'
+  command -v flatpak >/dev/null 2>&1 || die 'Flatpak is required to install desktop applications.'
 
-  log 'Installing Kitty from Flathub'
+  log 'Installing Kitty, Discord, Bitwarden, and Google Chrome from Flathub'
   run flatpak remote-add --if-not-exists --user flathub "$FLATHUB_REPOSITORY"
-  run flatpak install --user --noninteractive flathub "$KITTY_APP_ID"
+  run flatpak install --user --noninteractive flathub "$KITTY_APP_ID" \
+    com.discordapp.Discord com.bitwarden.desktop com.google.Chrome
 
   ensure_homebrew
   log 'Installing terminal tools from Homebrew'
