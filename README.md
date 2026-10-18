@@ -2,11 +2,12 @@
 
 Install a Dracula Sakura desktop and terminal setup on Bazzite.
 
-The script installs Kitty through Flathub. It installs terminal tools through Homebrew. It configures the supported desktop and terminal applications.
+The script installs Kitty, Discord, Bitwarden, and Google Chrome through Flathub. It installs terminal tools through Homebrew. It configures the supported desktop and terminal applications.
 
 ## Included components
 
 - Kitty with a Dracula Sakura color palette.
+- Discord, Bitwarden, and Google Chrome.
 - bat, eza, btop, Trippy, Micro, Leaf, Starship, Fastfetch, duf, and fzf.
 - JetBrains Mono Nerd Font.
 - Bash, Zsh, and Fish aliases with Starship and fzf integration.
@@ -34,7 +35,7 @@ Start a new shell session after the script completes. Log out and log in to appl
 
 ## Package sources
 
-Kitty installs from Flathub as `com.github.kovidgoyal.kitty`. The terminal tools install through Homebrew. The script installs Homebrew when Bazzite does not provide it.
+Kitty (`com.github.kovidgoyal.kitty`), Discord (`com.discordapp.Discord`), Bitwarden (`com.bitwarden.desktop`), and Google Chrome (`com.google.Chrome`) install from Flathub for the current user. The terminal tools install through Homebrew. The script installs Homebrew when Bazzite does not provide it.
 
 ## License
 
