@@ -3,7 +3,6 @@
 set -Eeuo pipefail
 IFS=$'\n\t'
 
-readonly KITTY_APP_ID='com.github.kovidgoyal.kitty'
 readonly FLATHUB_REPOSITORY='https://dl.flathub.org/repo/flathub.flatpakrepo'
 readonly CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 readonly DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
@@ -155,13 +154,52 @@ ensure_homebrew() {
   command -v brew >/dev/null 2>&1 || die 'Homebrew installation did not provide brew on PATH.'
 }
 
+install_kitty() {
+  local installer desktop line
+  log 'Installing Kitty from the official binary distribution'
+  if (( DRY_RUN )); then
+    log 'Would download and run https://sw.kovidgoyal.net/kitty/installer.sh with launch=n'
+  else
+    installer=$(mktemp)
+    if ! curl -fsSL https://sw.kovidgoyal.net/kitty/installer.sh -o "$installer"; then
+      rm -f "$installer"
+      die 'Could not download the Kitty installer.'
+    fi
+    if ! sh "$installer" launch=n; then
+      rm -f "$installer"
+      die 'Kitty installation failed.'
+    fi
+    rm -f "$installer"
+  fi
+
+  run mkdir -p "$HOME/.local/bin" "$DATA_HOME/applications"
+  run ln -sfn "$HOME/.local/kitty.app/bin/kitty" "$HOME/.local/bin/kitty"
+  run ln -sfn "$HOME/.local/kitty.app/bin/kitten" "$HOME/.local/bin/kitten"
+  for desktop in kitty.desktop kitty-open.desktop; do
+    if (( DRY_RUN )); then
+      log "Would install $DATA_HOME/applications/$desktop with absolute executable and icon paths"
+    else
+      while IFS= read -r line || [[ -n "$line" ]]; do
+        line=${line/#Exec=kitty/Exec=\"$HOME\/.local\/kitty.app\/bin\/kitty\"}
+        line=${line/#Icon=kitty/Icon=$HOME\/.local\/kitty.app\/share\/icons\/hicolor\/256x256\/apps\/kitty.png}
+        printf '%s\n' "$line"
+      done <"$HOME/.local/kitty.app/share/applications/$desktop" |
+        write_file "$DATA_HOME/applications/$desktop"
+    fi
+  done
+  write_file "$CONFIG_HOME/xdg-terminals.list" <<'EOF'
+kitty.desktop
+EOF
+}
+
 install_packages() {
   command -v flatpak >/dev/null 2>&1 || die 'Flatpak is required to install desktop applications.'
 
-  log 'Installing Kitty, Discord, Bitwarden, and Google Chrome from Flathub'
+  log 'Installing Discord, Bitwarden, and Google Chrome from Flathub'
   run flatpak remote-add --if-not-exists --user flathub "$FLATHUB_REPOSITORY"
-  run flatpak install --user --noninteractive flathub "$KITTY_APP_ID" \
+  run flatpak install --user --noninteractive flathub \
     com.discordapp.Discord com.bitwarden.desktop com.google.Chrome
+  install_kitty
 
   ensure_homebrew
   log 'Installing terminal tools from Homebrew'
@@ -174,7 +212,7 @@ install_packages() {
 }
 
 write_kitty_config() {
-  write_file "$HOME/.var/app/$KITTY_APP_ID/config/kitty/kitty.conf" <<'EOF'
+  write_file "$CONFIG_HOME/kitty/kitty.conf" <<'EOF'
 # Dracula Sakura
 font_family      JetBrainsMono Nerd Font
 font_size        12.0
@@ -872,13 +910,13 @@ EOF
       try_run lookandfeeltool -a org.kde.breezedark.desktop
     fi
     if command -v kwriteconfig6 >/dev/null 2>&1; then
-      run kwriteconfig6 --file kdeglobals --group General --key TerminalApplication kitty
-      run kwriteconfig6 --file kdeglobals --group General --key TerminalService "$KITTY_APP_ID.desktop"
+      run kwriteconfig6 --file kdeglobals --group General --key TerminalApplication "$HOME/.local/kitty.app/bin/kitty"
+      run kwriteconfig6 --file kdeglobals --group General --key TerminalService kitty.desktop
     fi
   fi
 
   if command -v xdg-mime >/dev/null 2>&1; then
-    try_run xdg-mime default "$KITTY_APP_ID.desktop" x-scheme-handler/terminal
+    try_run xdg-mime default kitty.desktop x-scheme-handler/terminal
   fi
 }
 

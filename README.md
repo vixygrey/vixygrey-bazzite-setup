@@ -2,7 +2,7 @@
 
 Install a Dracula Sakura desktop and terminal setup on Bazzite.
 
-The script installs Kitty, Discord, Bitwarden, and Google Chrome through Flathub. It installs terminal tools through Homebrew. It configures the supported desktop and terminal applications.
+The script installs Kitty from its official Linux binary distribution and Discord, Bitwarden, and Google Chrome through Flathub. It installs terminal tools through Homebrew. It configures the supported desktop and terminal applications.
 
 ## Included components
 
@@ -35,7 +35,11 @@ Start a new shell session after the script completes. Log out and log in to appl
 
 ## Package sources
 
-Kitty (`com.github.kovidgoyal.kitty`), Discord (`com.discordapp.Discord`), Bitwarden (`com.bitwarden.desktop`), and Google Chrome (`com.google.Chrome`) install from Flathub for the current user. The terminal tools install through Homebrew. The script installs Homebrew when Bazzite does not provide it.
+Kitty installs through its [official binary installer](https://sw.kovidgoyal.net/kitty/binary/) into `~/.local/kitty.app`, without launching during setup. The script links `kitty` and `kitten` into `~/.local/bin`, installs desktop entries with absolute executable and icon paths, and configures `kitty.desktop` as the terminal preference. Ensure `~/.local/bin` is on your PATH to use these commands from a shell. Kitty settings are written to `${XDG_CONFIG_HOME:-$HOME/.config}/kitty/kitty.conf`; desktop entries respect `XDG_DATA_HOME`.
+
+Discord (`com.discordapp.Discord`), Bitwarden (`com.bitwarden.desktop`), and Google Chrome (`com.google.Chrome`) install from Flathub for the current user. The terminal tools install through Homebrew. The script installs Homebrew when Bazzite does not provide it.
+
+If an earlier run failed because Flathub could not find Kitty, rerun the updated setup script. It no longer requests the unavailable `com.github.kovidgoyal.kitty` Flatpak. As with any rerun, back up existing configuration first.
 
 ## License
 
